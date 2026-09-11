@@ -1,22 +1,193 @@
 import { Crypto } from 'assets://js/lib/cat.js';
+// ===== 纯 JS RSA (PKCS1 v1.5, BigInt 实现, 供 quickjs/Node 通用) =====
+// 支持 1024/2048 位密钥; 输入输出按 o.input/o.output: base64|hex|utf8
+var __rsaJS = (function () {
+    function b64ToBuf(s) {
+        s = String(s).replace(/-/g, '+').replace(/_/g, '/').replace(/[^A-Za-z0-9+/=]/g, '');
+        var t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/', out = [], bits = 0, acc = 0;
+        for (var i = 0; i < s.length; i++) {
+            var c = s.charAt(i);
+            if (c === '=') break;
+            acc = (acc << 6) | t.indexOf(c); bits += 6;
+            if (bits >= 8) { bits -= 8; out.push((acc >> bits) & 0xFF); }
+        }
+        return out;
+    }
+    function bufToB64(arr) {
+        var t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/', out = '', i;
+        for (i = 0; i < arr.length; i += 3) {
+            var b0 = arr[i], b1 = i + 1 < arr.length ? arr[i + 1] : NaN, b2 = i + 2 < arr.length ? arr[i + 2] : NaN;
+            out += t.charAt(b0 >> 2);
+            out += t.charAt(((b0 & 3) << 4) | (isNaN(b1) ? 0 : b1 >> 4));
+            out += isNaN(b1) ? '=' : t.charAt(((b1 & 15) << 2) | (isNaN(b2) ? 0 : b2 >> 6));
+            out += isNaN(b2) ? '=' : t.charAt(b2 & 63);
+        }
+        return out;
+    }
+    function bufToHex(arr) { var s = ''; for (var i = 0; i < arr.length; i++) { s += (arr[i] < 16 ? '0' : '') + arr[i].toString(16); } return s; }
+    function hexToBuf(s) { var out = []; s = String(s).replace(/[^0-9a-fA-F]/g, ''); for (var i = 0; i + 1 < s.length; i += 2) out.push(parseInt(s.substr(i, 2), 16)); return out; }
+    /* 极简 DER: 在 buffer 里找指定 tag 的第一个 TLV, 返回 value 字节数组 */
+    function derFind(arr, start, end, tag) {
+        var i = start;
+        while (i + 1 < end) {
+            var t = arr[i], j = i + 1, len;
+            var b = arr[j]; j++;
+            if (b < 0x80) len = b;
+            else { var nb = b & 0x7F; len = 0; for (var x = 0; x < nb; x++) { len = len * 256 + arr[j]; j++; } }
+            if (t === tag) return { body: arr.slice(j, j + len), next: j + len };
+            i = j + len;
+        }
+        return null;
+    }
+    function pemBody(pem) {
+        var lines = String(pem).split('\n'), rows = [];
+        for (var i = 0; i < lines.length; i++) {
+            var L = lines[i].replace(/\r/g, '');
+            if (L.indexOf('-----') < 0 && L.length) rows.push(L.replace(/\s+/g, ''));
+        }
+        return b64ToBuf(rows.join(''));
+    }
+    function intsFromSeq(seq) {
+        /* 收集 SEQUENCE 里的所有 INTEGER (跳过前导 0x00) */
+        var out = [], pos = 0, guard = 0;
+        while (pos + 1 < seq.length && guard++ < 32) {
+            var t = seq[pos], j = pos + 1, len;
+            var b = seq[j]; j++;
+            if (b < 0x80) len = b;
+            else { var nb = b & 0x7F; len = 0; for (var x = 0; x < nb; x++) { len = len * 256 + seq[j]; j++; } }
+            if (t === 0x02) {
+                var v = seq.slice(j, j + len);
+                while (v.length && v[0] === 0) v.shift();
+                var hex = bufToHex(v);
+                out.push(hex === '' ? 0n : BigInt('0x' + hex));
+            }
+            pos = j + len;
+        }
+        return out;
+    }
+    function parsePublicKey(pem) {
+        var der = pemBody(pem);
+        var spki = derFind(der, 0, der.length, 0x30);           // 外层 SEQUENCE
+        var bit = derFind(spki.body, 0, spki.body.length, 0x03); // BIT STRING
+        var inner = bit.body.slice(1);                           // 去掉 unused-bits
+        var seq = derFind(inner, 0, inner.length, 0x30);
+        var ints = intsFromSeq(seq.body);
+        return { n: ints[0], e: ints[1] || 65537n, k: (ints[0].toString(16).length + 1) >> 1 };
+    }
+    function parsePrivateKey(pem) {
+        var der = pemBody(pem);
+        var top = derFind(der, 0, der.length, 0x30);             // PKCS#8 外层
+        var oct = derFind(top.body, 0, top.body.length, 0x04);   // OCTET STRING (PKCS#1)
+        var seq = derFind(oct.body, 0, oct.body.length, 0x30);
+        var ints = intsFromSeq(seq.body);                        // [ver, n, e, d, p, q, ...]
+        return { n: ints[1], e: ints[2] || 65537n, d: ints[3], k: (ints[1].toString(16).length + 1) >> 1 };
+    }
+    function modPow(b, e, m) {
+        var r = 1n; b %= m;
+        while (e > 0n) {
+            if (e & 1n) r = (r * b) % m;
+            b = (b * b) % m; e >>= 1n;
+        }
+        return r;
+    }
+    function bytesOf(big, k) {
+        var hex = big.toString(16);
+        if (hex.length % 2) hex = '0' + hex;
+        var arr = hexToBuf(hex);
+        while (arr.length < k) arr.unshift(0);
+        return arr.slice(-k);
+    }
+    function os2ip(arr) { return BigInt('0x' + (bufToHex(arr) || '0')); }
+    function utf8FromBytes(arr) {
+        var s = '', i = 0;
+        while (i < arr.length) {
+            var b = arr[i];
+            if (b < 0x80) { s += String.fromCharCode(b); i++; }
+            else if (b < 0xE0) { s += String.fromCharCode(((b & 31) << 6) | (arr[i + 1] & 63)); i += 2; }
+            else if (b < 0xF0) { s += String.fromCharCode(((b & 15) << 12) | ((arr[i + 1] & 63) << 6) | (arr[i + 2] & 63)); i += 3; }
+            else { var cp = ((b & 7) << 18) | ((arr[i + 1] & 63) << 12) | ((arr[i + 2] & 63) << 6) | (arr[i + 3] & 63); cp -= 0x10000; s += String.fromCharCode(0xD800 + (cp >> 10), 0xDC00 + (cp & 1023)); i += 4; }
+        }
+        return s;
+    }
+    function utf8Bytes(s) {
+        var out = [];
+        for (var i = 0; i < s.length; i++) {
+            var c = s.charCodeAt(i);
+            if (c < 0x80) out.push(c);
+            else if (c < 0x800) { out.push(0xC0 | (c >> 6), 0x80 | (c & 63)); }
+            else if (c < 0xD800 || c >= 0xE000) { out.push(0xE0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63)); }
+            else { i++; var cp = 0x10000 + (((c & 1023) << 10) | (s.charCodeAt(i) & 1023)); out.push(0xF0 | (cp >> 18), 0x80 | ((cp >> 12) & 63), 0x80 | ((cp >> 6) & 63), 0x80 | (cp & 63)); }
+        }
+        return out;
+    }
+    return {
+        encrypt: function (plain, pem, o) {
+            o = o || {};
+            var key = parsePublicKey(pem), msg, i;
+            if (o.input === 'hex') msg = hexToBuf(plain);
+            else if (o.input === 'base64') msg = b64ToBuf(plain);
+            else msg = [];
+            var s = String(plain);
+            var _ub = utf8Bytes(s);
+            for (i = 0; i < _ub.length; i++) msg.push(_ub[i]);
+            var k = key.k;
+            if (msg.length > k - 11) throw new Error('RSA 明文过长');
+            var ps = [];
+            while (ps.length < k - 3 - msg.length) { var r = Math.floor(Math.random() * 255) + 1; ps.push(r); }
+            var m = [0].concat([2], ps, [0], msg);
+            var c = modPow(os2ip(m), key.e, key.n);
+            var out = bytesOf(c, k);
+            if (o.output === 'hex') return bufToHex(out);
+            return bufToB64(out);
+        },
+        decrypt: function (data, pem, o) {
+            o = o || {};
+            var key = parsePrivateKey(pem), arr;
+            if (o.input === 'hex') arr = hexToBuf(data);
+            else arr = b64ToBuf(data);
+            var k = key.k;
+            var c = os2ip(arr.slice(0, k));
+            var m = modPow(c, key.d, key.n);
+            var out = bytesOf(m, k);
+            /* PKCS1 type 2: 00 02 PS 00 msg */
+            if (out[0] === 0 && out[1] === 2) {
+                var idx = out.indexOf(0, 2);
+                if (idx > 2) out = out.slice(idx + 1);
+            } else if (out[0] === 0 && out[1] === 1) {
+                var idx2 = out.indexOf(0xFF, 2), idx3 = out.indexOf(0, 2);
+                if (idx3 > 2) out = out.slice(idx3 + 1);
+            }
+            var s = '';
+            for (var i = 0; i < out.length; i++) s += String.fromCharCode(out[i]);
+            return utf8FromBytes(out);
+        }
+    };
+})();
 
 // ===== ekan 桥 shim (drpy0 模块环境复刻易看Pro全局桥) =====
 var __ek_ext = {};
+
 function __ekOpts(o) {
     o = o || {};
     return { headers: o.headers || {}, timeout: o.timeout || 20000 };
 }
+// 兼容不同壳的 req 返回: {content|body}|string
+function __ekUnwrap(r) {
+    if (r == null) return '';
+    if (typeof r === 'string') return r;
+    if (r.content != null) return r.content;
+    if (r.body != null) return r.body;
+    try { return String(r); } catch (e) { return ''; }
+}
 function request(u, o) {
-    var r = req(u, __ekOpts(typeof o === 'string' ? JSON.parse(o) : o));
-    return (r && r.content != null) ? r.content : r;
+    return __ekUnwrap(req(u, __ekOpts(typeof o === 'string' ? JSON.parse(o) : o)));
 }
 function post(u, b, o) {
     var opt = __ekOpts(typeof o === 'string' ? JSON.parse(o) : o);
     opt.method = 'POST';
     opt.data = b == null ? '' : String(b);
     opt.postType = 'raw';
-    var r = req(u, opt);
-    return (r && r.content != null) ? r.content : r;
+    return __ekUnwrap(req(u, opt));
 }
 function parseJson(s) { return JSON.parse(s); }
 function encodeUri(v) { return encodeURIComponent(String(v)); }
@@ -61,6 +232,14 @@ var crypto = {
             var out = Crypto.AES.encrypt(String(str), k, opt);
             if (o.output === 'hex') return Crypto.enc.Hex.stringify(out.ciphertext);
             return out.toString();
+        }
+    },
+    rsa: {
+        encrypt: function (plain, pem, o) {
+            return __rsaJS.encrypt(plain, pem, o || {});
+        },
+        decrypt: function (data, pem, o) {
+            return __rsaJS.decrypt(data, pem, o || {});
         }
     }
 };
@@ -629,7 +808,12 @@ function __ekCards(a) {
     a = (typeof a === 'string') ? JSON.parse(a || '[]') : (a || []);
     if (!Array.isArray(a)) a = [];
     return a.map(function (x) {
-        return { vod_id: String(x.id || ''), vod_name: String(x.name || ''), vod_pic: String(x.pic || ''),
+        var pic = String(x.pic || '');
+        // 豆瓣图床防盗链: 418 裸请求, 必须带 douban Referer (jar 版蜘蛛同款后缀格式)
+        if (pic.indexOf('doubanio.com') >= 0 && pic.indexOf('@') < 0) {
+            pic += '@Referer=https://www.douban.com/@User-Agent=Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
+        }
+        return { vod_id: String(x.id || ''), vod_name: String(x.name || ''), vod_pic: pic,
                  vod_remarks: String(x.remarks || ''), vod_year: String(x.year || ''),
                  vod_class: String(x.type || ''), vod_content: String(x.desc || '') };
     });
