@@ -1,11 +1,10 @@
-// ===== ekan 桥 shim (drpy0 环境下复刻易看Pro的全局桥) =====
-// 依赖 drpy0 提供: req(url, opts)->{content}, Crypto(经 cat.js 导入)
-var __ek_ext = (typeof ext !== 'undefined' && ext) ? ext : {};
-var ext = __ek_ext;   // 源里 typeof ext 检查在 eval 期即成立, init() 时原地更新属性
+import { Crypto } from 'assets://js/lib/cat.js';
+
+// ===== ekan 桥 shim (drpy0 模块环境复刻易看Pro全局桥) =====
+var __ek_ext = {};
 function __ekOpts(o) {
     o = o || {};
-    var opt = { headers: o.headers || {}, timeout: o.timeout || 20000 };
-    return opt;
+    return { headers: o.headers || {}, timeout: o.timeout || 20000 };
 }
 function request(u, o) {
     var r = req(u, __ekOpts(typeof o === 'string' ? JSON.parse(o) : o));
@@ -34,12 +33,11 @@ var crypto = {
         o = o || {};
         var h = (n === 'SHA-1') ? Crypto.SHA1 : (n === 'SHA-256' ? Crypto.SHA256 : Crypto.MD5);
         var msg = (o.input === 'hex') ? Crypto.enc.Hex.parse(String(v)) : Crypto.enc.Utf8.parse(String(v));
-        var out = h(msg);
-        return (o.output === 'bytes') ? out : out.toString();
+        return h(msg).toString();
     },
     base64: {
         encode: function (v, o) { o = o || {}; var w = (o.input === 'hex') ? Crypto.enc.Hex.parse(String(v)) : Crypto.enc.Utf8.parse(String(v)); return Crypto.enc.Base64.stringify(w); },
-        decode: function (v, o) { o = o || {}; var w = Crypto.enc.Base64.parse(String(v)); return (o.output === 'hex') ? Crypto.enc.Hex.stringify(w) : ((o.output === 'bytes') ? w : Crypto.enc.Utf8.stringify(w)); }
+        decode: function (v, o) { o = o || {}; var w = Crypto.enc.Base64.parse(String(v)); return (o.output === 'hex') ? Crypto.enc.Hex.stringify(w) : Crypto.enc.Utf8.stringify(w); }
     },
     aes: {
         decrypt: function (str, key, o) {
@@ -51,7 +49,7 @@ var crypto = {
             if (o.iv) opt.iv = (o.ivFormat === 'hex') ? Crypto.enc.Hex.parse(String(o.iv)) : Crypto.enc.Utf8.parse(String(o.iv));
             var msg = (o.input === 'hex') ? Crypto.enc.Hex.parse(String(str)) : null;
             var out = msg ? Crypto.AES.decrypt({ ciphertext: msg }, k, opt) : Crypto.AES.decrypt(String(str), k, opt);
-            return (o.output === 'bytes') ? out : out.toString(Crypto.enc.Utf8);
+            return out.toString(Crypto.enc.Utf8);
         },
         encrypt: function (str, key, o) {
             o = o || {};
@@ -62,7 +60,6 @@ var crypto = {
             if (o.iv) opt.iv = (o.ivFormat === 'hex') ? Crypto.enc.Hex.parse(String(o.iv)) : Crypto.enc.Utf8.parse(String(o.iv));
             var out = Crypto.AES.encrypt(String(str), k, opt);
             if (o.output === 'hex') return Crypto.enc.Hex.stringify(out.ciphertext);
-            if (o.output === 'bytes') return out.ciphertext;
             return out.toString();
         }
     }
@@ -332,7 +329,7 @@ function drpy_play(flag, id, flags) {
         return JSON.stringify(out);
     } catch (e) { return JSON.stringify({ parse: 0, url: '' }); }
 }
-function __jsEvalReturn() {
+export function __jsEvalReturn() {
     return { init: drpy_init, home: drpy_home, homeVod: drpy_homeVod, category: drpy_category,
              detail: drpy_detail, search: drpy_search, play: drpy_play };
 }
