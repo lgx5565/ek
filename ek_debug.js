@@ -149,22 +149,7 @@ var GZ_PUB = '-----BEGIN PUBLIC KEY-----\n' +
     'N8iK4zYZ3XK8YGRVhzHZkwcEwJLTGZn1Gk4loCpInQRUu5/tGRhXaJUXTS28jPnB\n' +
     '5wIDAQAB\n' +
     '-----END PUBLIC KEY-----';
-var GZ_PRIV_OBJ = {priv: ('-----BEGIN PRIVATE KEY-----\n' +
-    'MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGAe6hKrWLi1zQmjTT1\n' +
-    'ozbE4QdFeJGNxubxld6GrFGximxfMsMB6BpJhpcTouAqywAFppiKetUBBbXwYsYU\n' +
-    '1wNr648XVmPmCMCy4rY8vdliFnbMUj086DU6Z+/oXBdWU3/b1G0DN3E9wULRSwcK\n' +
-    'ZT3wj/cCI1vsCm3gj2R5SqkA9Y0CAwEAAQKBgAJH+4CxV0/zBVcLiBCHvSANm0l7\n' +
-    'HetybTh/j2p0Y1sTXro4ALwAaCTUeqdBjWiLSo9lNwDHFyq8zX90+gNxa7c5EqcW\n' +
-    'V9FmlVXr8VhfBzcZo1nXeNdXFT7tQ2yah/odtdcx+vRMSGJd1t/5k5bDd9wAvYdI\n' +
-    'DblMAg+wiKKZ5KcdAkEA1cCakEN4NexkF5tHPRrR6XOY/XHfkqXxEhMqmNbB9U34\n' +
-    'saTJnLWIHC8IXys6Qmzz30TtzCjuOqKRRy+FMM4TdwJBAJQZFPjsGC+RqcG5UvVM\n' +
-    'iMPhnwe/bXEehShK86yJK/g/UiKrO87h3aEu5gcJqBygTq3BBBoH2md3pr/W+hUM\n' +
-    'WBsCQQChfhTIrdDinKi6lRxrdBnn0Ohjg2cwuqK5zzU9p/N+S9x7Ck8wUI53DKm8\n' +
-    'jUJE8WAG7WLj/oCOWEh+ic6NIwTdAkEAj0X8nhx6AXsgCYRql1klbqtVmL8+95KZ\n' +
-    'K7PnLWG/IfjQUy3pPGoSaZ7fdquG8bq8oyf5+dzjE/oTXcByS+6XRQJAP/5ciy1b\n' +
-    'L3NhUhsaOVy55MHXnPjdcTX0FaLi+ybXZIfIQ2P4rb19mVq1feMbCXhz+L1rG8oa\n' +
-    't5lYKfpe8k83ZA==\n' +
-    '-----END PRIVATE KEY-----')};
+var GZ_PRIV_OBJ = null;
 var GZ_OLD_KEY = 'aLFBMWpxBrIDAD1Si/KVvm41';
 var GZ_SIGN_SUFFIX = '*&zvdvdvddbfikkkumtmdwqppp?|4Y!s!2br';
 var GZ_HOST = 'https://apinew.uozvr.com';
@@ -187,31 +172,6 @@ function runTests() {
             { mode: Crypto.mode.CBC, padding: Crypto.pad.Pkcs7, iv: Crypto.enc.Utf8.parse('abcdef0123456789') }).toString(Crypto.enc.Utf8);
         rec('Crypto.AES(CBC)', back === 'hello-test', '回文: ' + back);
     } catch (e) { rec('Crypto.AES(CBC)', false, e.message); }
-
-    /* 后端连通性 (四个问题源 + 对照组) */
-    var targets = [
-        ['闪电对照组', 'https://u.yyxdmn.com/api/new_public/init_v2', null],
-        ['柿子 198.16.32.131:12345', 'http://198.16.32.131:12345/nxsz.php/v7/logs', null],
-        ['粉猪 198.16.60.3', 'http://198.16.60.3/', null],
-        ['师兄 dsxys.com', 'https://dsxys.com/', null],
-        ['师兄 app2.dsx.ac', 'http://app2.dsx.ac/ndsx.php/v7/logs', null],
-        ['荐片 wangerniu.whfft.com', 'https://wangerniu.whfft.com/api/v2/settings/homeCategory', null],
-        ['热播 103.36.222.35', 'http://103.36.222.35/', null],
-        ['热播 aleig4ah.yiys05.com', 'https://aleig4ah.yiys05.com/vod-app', null],
-        ['热播 v.rbotv.cn', 'https://v.rbotv.cn/', null],
-        ['热播 api.dbokutv.com', 'https://api.dbokutv.com/home', null]
-    ];
-    for (var i = 0; i < targets.length; i++) {
-        var t = targets[i];
-        try {
-            var t0 = Date.now();
-            var r = t[2] != null ? post_(t[1], t[2], { headers: { 'User-Agent': 'okhttp/3.12.0', 'Content-Type': 'application/x-www-form-urlencoded' }, timeout: 12000 })
-                                 : req_(t[1], { headers: { 'User-Agent': 'okhttp/3.12.0' }, timeout: 12000 });
-            var ms = Date.now() - t0;
-            var ok = r && text(r).length > 0 && text(r).indexOf('<html') < 0;
-            rec('连通.' + t[0], !!ok, text(r).length + 'B / ' + ms + 'ms | 首内容: ' + text(r).slice(0, 50).replace(/\n/g, ' '));
-        } catch (e) { rec('连通.' + t[0], false, e.message); }
-    }
 }
 
 function runRsAndGz() {

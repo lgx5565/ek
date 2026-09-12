@@ -199,6 +199,8 @@ function base64Decode(v) { return Crypto.enc.Utf8.stringify(Crypto.enc.Base64.pa
 function md5(v) { return Crypto.MD5(String(v)).toString(); }
 function sha1(v) { return Crypto.SHA1(String(v)).toString(); }
 var __ekStore = {};
+/* OK影视 quickjs 无全局 log(只有 console): 部分源在 catch 里直接调 log() → 设备端 ReferenceError */
+var log = (typeof log === 'function') ? log : function (v) { try { console.log(String(v)); } catch (e) {} };
 function getItem(k, d) { return (k in __ekStore) ? __ekStore[k] : (d == null ? '' : d); }
 function setItem(k, v) { __ekStore[k] = String(v); }
 var crypto = {
@@ -320,7 +322,7 @@ function lyPlay(f){var x=lyCall('/play.php?vodid='+enc(f)),u=t((x.playres||{}).p
 
 function config(){return JSON.stringify({kind:'video',browseOnly:false,source:SOURCE_TITLE});}
 function categories(){try{var out=[{key:'',title:'推荐'}],a=[];if(KIND==='duboku')a=[['1','电影'],['2','电视剧'],['3','综艺'],['4','动漫'],['21','短剧'],['20','港剧']];else if(KIND==='wencai')a=[['1','电影'],['2','电视剧'],['3','综艺'],['4','动漫']];else if(KIND==='rebo'){var x=rbCall('/v3/type/top_type',{'':''});a=(x.data||{}).list||[];}else if(KIND==='yiying'){yiInit();a=yiNav();}
-    else if(KIND==='liyuan')a=[['1','戏曲大全'],['2','名家大腕']];for(var i=0;i<a.length;i++){var x=a[i],id=t(Array.isArray(x)?x[0]:(x.type_id||x.typeId)),name=clean(Array.isArray(x)?x[1]:(x.type_name||x.typeName));if(id&&name){var it={key:id,title:name};if(KIND==='liyuan')it.filters=[{key:'class',name:'剧种',value:[{n:'京剧',v:'jingju'},{n:'豫剧',v:'yuju'},{n:'越剧',v:'yueju'},{n:'黄梅戏',v:'hmx'},{n:'相声',v:'xiang'},{n:'评书',v:'pingshu'}]}];out.push(it);}}return JSON.stringify(out);}catch(e){return JSON.stringify([{key:'',title:'推荐'}]);}}
+    else if(KIND==='liyuan')a=[['1','戏曲大全'],['2','名家大腕']];for(var i=0;i<a.length;i++){var x=a[i],id=t(Array.isArray(x)?x[0]:(x.type_id||x.typeId)),name=clean(Array.isArray(x)?x[1]:(x.type_name||x.typeName));if(id&&name){var it={key:id,title:name};if(KIND==='liyuan')it.filters=[{key:'class',name:'剧种',value:[{n:'京剧',v:'jingju'},{n:'豫剧',v:'yuju'},{n:'越剧',v:'yueju'},{n:'黄梅戏',v:'hmx'},{n:'相声',v:'xiang'},{n:'评书',v:'pingshu'}]}];out.push(it);}}if(out.length===1)out.push({key:'ekoff',title:'⚠️ 后端未响应，请稍后重试'});return JSON.stringify(out);}catch(e){return JSON.stringify([{key:'ekoff',title:'⚠️ 后端未响应，请稍后重试'}]);}}
 function search(q,p){try{q=tr(q);p=Math.max(1,Number(p)||1);if(KIND==='duboku')return JSON.stringify(q?dbSearch(q):dbHome());if(KIND==='rebo')return JSON.stringify(q?rbList(rbCall('/v3/home/search',{keyword:q})):rbList(rbCall('/v3/home/type_search',{area:'',year:'',type_id:'1',page:t(p),lang:'','class':''})));if(KIND==='wencai')return JSON.stringify(q?wcSearch(q,p):wcHome());if(KIND==='yiying')return JSON.stringify(q?yiSearch(q,p):yiCategory('1',p,{}));if(KIND==='liyuan')return JSON.stringify(q?lySearch(q,p):lyCategory('1',p,{}));}catch(e){}return'[]';}
 function searchFiltered(c,f,p){try{f=j(f)||{};if(KIND==='duboku')return JSON.stringify(dbCategory(c,p,f));if(KIND==='rebo')return JSON.stringify(rbList(rbCall('/v3/home/type_search',{area:t(f.area),year:t(f.year),type_id:t(c),page:t(p),lang:t(f.lang),'class':t(f['class'])})));if(KIND==='wencai')return JSON.stringify(wcCategory(c,p,f));if(KIND==='yiying')return JSON.stringify(yiCategory(c,p,f));if(KIND==='liyuan')return JSON.stringify(lyCategory(c,p,f));}catch(e){}return'[]';}
 function detail(id){try{if(KIND==='duboku')return JSON.stringify(dbDetail(t(id)));if(KIND==='rebo')return JSON.stringify(rbDetail(t(id)));if(KIND==='wencai')return JSON.stringify(wcDetail(t(id)));if(KIND==='yiying')return JSON.stringify(yiDetail(t(id)));if(KIND==='liyuan')return JSON.stringify(lyDetail(t(id)));}catch(e){}return JSON.stringify({id:t(id),name:'',pic:'',desc:'',episodes:[]});}
@@ -385,6 +387,7 @@ function drpy_homeVod() {
 }
 function drpy_category(tid, pg, filter, extend) {
     pg = Math.max(1, parseInt(pg, 10) || 1);
+    if (tid === 'ekoff') return JSON.stringify({ page: 1, pagecount: 1, list: [{ id: 'ekoff', name: '⚠️ 该源后端暂不可达（服务器停机或限流），请稍后重试。', pic: '', remarks: '后端状态', desc: 'AppV7 系源的后端为 VPS，不稳定属常态；过一会儿刷新本源，或先改用其他源。' }] });
     try {
         var f = {};
         try { f = (typeof extend === 'string' && extend) ? JSON.parse(extend) : (extend || {}); } catch (e) {}

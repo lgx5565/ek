@@ -199,6 +199,8 @@ function base64Decode(v) { return Crypto.enc.Utf8.stringify(Crypto.enc.Base64.pa
 function md5(v) { return Crypto.MD5(String(v)).toString(); }
 function sha1(v) { return Crypto.SHA1(String(v)).toString(); }
 var __ekStore = {};
+/* OK影视 quickjs 无全局 log(只有 console): 部分源在 catch 里直接调 log() → 设备端 ReferenceError */
+var log = (typeof log === 'function') ? log : function (v) { try { console.log(String(v)); } catch (e) {} };
 function getItem(k, d) { return (k in __ekStore) ? __ekStore[k] : (d == null ? '' : d); }
 function setItem(k, v) { __ekStore[k] = String(v); }
 var crypto = {
@@ -347,7 +349,7 @@ function mapRexCard(s, tabType) {
     var pic = s.pic || {};
     var rate = (s.rating && s.rating.value) ? String(s.rating.value) : '';
     return {
-        id: id,
+        id: id + '\uFF5C' + name,
         name: name,
         pic: trim(pic.large || pic.normal || ''),
         type: tabType,
@@ -365,7 +367,7 @@ function mapOldCard(s, tabType) {
     var rate = trim(s.rate);
     var eps = trim(s.episodes_info);
     return {
-        id: String(s.id),
+        id: String(s.id) + '\uFF5C' + name,
         name: name,
         pic: trim(s.cover),
         type: tabType,
@@ -535,14 +537,57 @@ function searchFiltered(category, filtersJson, page) {
     return JSON.stringify(fetchTab(trim(category), f, parseInt(page, 10) || 1));
 }
 
-// browseOnly=true 时不会被调用；保留兜底，不提供片源。
+// 卡片 id 形如「<豆瓣id>｜<片名>」(全角竖线分隔): detail 由此还原片名, 合成「搜索」播放组。
+// 点卡片 → 详情页出现「搜索」播放接口 → 点击 play() → java 桥打开 App 聚合搜索页(跨源找可播源)。
 function detail(id) {
-    return JSON.stringify({ id: id, name: '', pic: '', desc: '', type: '', remarks: '', year: '', episodes: [] });
+    var full = trim(id);
+    var sep = full.indexOf('\uFF5C');
+    var name = sep > 0 ? trim(full.slice(sep + 1)) : '';
+    var num = (sep > 0 ? full.slice(0, sep) : full).replace(/\D/g, '');
+    var episodes = name ? [{ route: '搜索', name: name, url: name }] : [];
+    return JSON.stringify({
+        id: num || full, name: name, pic: '',
+        desc: name ? ('豆瓣浏览源 · 无直链：点「搜索」跳 App 聚合搜索页，在其它源里搜「' + name + '」即可播放。') : '豆瓣浏览源 · 无直链',
+        type: '', remarks: '', year: '', episodes: episodes
+    });
+}
+
+// OK影视 quickjs 的 java 桥打开 App 内聚合搜索页。
+// 三层尝试: ①3.6.2 混淆字段 App.f7831g(静态实例)/f7834c(当前 Activity) + SearchActivity.S()
+//           ②通用方式: App 实例 + Intent(NEW_TASK) 直开 SearchActivity (类名较稳定, 混淆只改字段/方法名)
+//           ③都失败 → 返回 false, play 退回「url=片名」(App 端无法解析时至少详情页可见)
+function openAppSearch(title) {
+    try {
+        var App = java.com.fongmi.android.tv.App;
+        var inst = App.f7831g;
+        var act = inst && inst.f7834c;
+        if (act) {
+            java.com.fongmi.android.tv.ui.activity.SearchActivity.S(act, String(title));
+            return true;
+        }
+    } catch (e) {}
+    try {
+        var App2 = java.com.fongmi.android.tv.App;
+        var inst2 = App2.f7831g;
+        if (inst2) {
+            var Intent = java.android.content.Intent;
+            var cls = java.lang.Class.forName('com.fongmi.android.tv.ui.activity.SearchActivity');
+            var intent = new Intent(inst2, cls);
+            intent.putExtra('keyword', String(title));
+            intent.addFlags(268435456); // FLAG_ACTIVITY_NEW_TASK
+            inst2.startActivity(intent);
+            return true;
+        }
+    } catch (e2) {}
+    return false;
 }
 
 function play(flag) {
-    dbLog('[douban] browse-only, no play: ' + flag);
-    return JSON.stringify({ url: '', type: 'auto' });
+    var u = trim(flag);
+    if (/^https?:\/\//i.test(u)) return JSON.stringify({ url: u, type: 'auto' });
+    var opened = openAppSearch(u);
+    dbLog('[douban] play ' + (opened ? '-> 聚合搜索页' : '(java 桥不可用, 未跳转)') + ': ' + u);
+    return JSON.stringify({ url: opened ? '' : u, type: 'auto' });
 }
 // ===== drpy 适配层: 易看源 -> drpy0(TVBox/FongMi) 约定 =====
 // 注意: drpy 函数一律用 drpy_ 前缀, 避免覆盖易看源的同名函数(hoisting 后者会赢)
@@ -604,6 +649,7 @@ function drpy_homeVod() {
 }
 function drpy_category(tid, pg, filter, extend) {
     pg = Math.max(1, parseInt(pg, 10) || 1);
+    if (tid === 'ekoff') return JSON.stringify({ page: 1, pagecount: 1, list: [{ id: 'ekoff', name: '⚠️ 该源后端暂不可达（服务器停机或限流），请稍后重试。', pic: '', remarks: '后端状态', desc: 'AppV7 系源的后端为 VPS，不稳定属常态；过一会儿刷新本源，或先改用其他源。' }] });
     try {
         var f = {};
         try { f = (typeof extend === 'string' && extend) ? JSON.parse(extend) : (extend || {}); } catch (e) {}

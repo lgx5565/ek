@@ -199,6 +199,8 @@ function base64Decode(v) { return Crypto.enc.Utf8.stringify(Crypto.enc.Base64.pa
 function md5(v) { return Crypto.MD5(String(v)).toString(); }
 function sha1(v) { return Crypto.SHA1(String(v)).toString(); }
 var __ekStore = {};
+/* OK影视 quickjs 无全局 log(只有 console): 部分源在 catch 里直接调 log() → 设备端 ReferenceError */
+var log = (typeof log === 'function') ? log : function (v) { try { console.log(String(v)); } catch (e) {} };
 function getItem(k, d) { return (k in __ekStore) ? __ekStore[k] : (d == null ? '' : d); }
 function setItem(k, v) { __ekStore[k] = String(v); }
 var crypto = {
@@ -438,6 +440,7 @@ function drpy_homeVod() {
 }
 function drpy_category(tid, pg, filter, extend) {
     pg = Math.max(1, parseInt(pg, 10) || 1);
+    if (tid === 'ekoff') return JSON.stringify({ page: 1, pagecount: 1, list: [{ id: 'ekoff', name: '⚠️ 该源后端暂不可达（服务器停机或限流），请稍后重试。', pic: '', remarks: '后端状态', desc: 'AppV7 系源的后端为 VPS，不稳定属常态；过一会儿刷新本源，或先改用其他源。' }] });
     try {
         var f = {};
         try { f = (typeof extend === 'string' && extend) ? JSON.parse(extend) : (extend || {}); } catch (e) {}
