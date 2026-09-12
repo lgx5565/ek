@@ -166,6 +166,8 @@ var __rsaJS = (function () {
 
 // ===== ekan 桥 shim (drpy0 模块环境复刻易看Pro全局桥) =====
 var __ek_ext = {};
+var ext = __ek_ext;   /* 关键: 源里 typeof ext 检查在 eval 期即成立; init 时原地更新属性 */
+
 
 function __ekOpts(o) {
     o = o || {};
@@ -392,6 +394,13 @@ function __ekCards(a) {
                  vod_class: String(x.type || ''), vod_content: String(x.desc || '') };
     });
 }
+/* 设备端错误可视化: 出错时把错误文本变成一条"影片", 用户截图即可看到真实原因 */
+function __ekErr(scope, e) {
+    var msg = (e && e.message) ? e.message : String(e);
+    var line = (e && e.stack) ? (String(e.stack).split('\n')[1] || '').trim().slice(0, 120) : '';
+    return [{ id: 'ekdbg_' + scope, name: '⚠️ ' + scope + ': ' + msg.slice(0, 80),
+              pic: '', remarks: line, desc: String(e.stack || e).slice(0, 400), type: '', year: '' }];
+}
 function __ekExtApply(cfg) {
     try {
         if (cfg && cfg.ext) {
@@ -410,7 +419,10 @@ function drpy_home(filter) {
             classes.push({ type_id: String(c.key), type_name: String(c.title || c.key) });
             if (c.filters && c.filters.length) filters[String(c.key)] = c.filters;
         });
-    } catch (e) {}
+    } catch (e) {
+        var em = (e && e.message) ? e.message : String(e);
+        classes.push({ type_id: 'ekdbg_home', type_name: '⚠️ 加载错误: ' + em.slice(0, 70) });
+    }
     return JSON.stringify({ class: classes, filters: filters });
 }
 function drpy_homeVod() {
@@ -431,7 +443,11 @@ function drpy_category(tid, pg, filter, extend) {
         try { f = (typeof extend === 'string' && extend) ? JSON.parse(extend) : (extend || {}); } catch (e) {}
         if (typeof searchFiltered === 'function' && tid) return JSON.stringify({ page: pg, pagecount: 9999, list: __ekCards(searchFiltered(String(tid), JSON.stringify(f), pg)) });
         if (typeof search === 'function') return JSON.stringify({ page: pg, pagecount: 9999, list: __ekCards(search('', pg)) });
-    } catch (e) {}
+    } catch (e) {
+        var em = (e && e.message) ? e.message : String(e);
+        return JSON.stringify({ page: 1, pagecount: 1, list: __ekCards(JSON.stringify([
+            { id: 'ekdbg_cat', name: '⚠️ ' + em.slice(0, 70), pic: '', remarks: '加载错误', desc: String(e.stack || e).slice(0, 300) }])) });
+    }
     return JSON.stringify({ page: pg, pagecount: 9999, list: [] });
 }
 function drpy_detail(id) {
