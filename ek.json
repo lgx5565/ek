@@ -1,8 +1,18 @@
 {
  "spider": "./9527.jar",
  "wallpaper": "https://t.alcy.cc/fj",
- "warningText": "易看源 drpy 适配版 · 仅供学习 · 请于24h内删除",
+ "warningText": "易看源 drpy 适配 v2 · 模块格式 · 仅供学习",
  "sites": [
+  {
+   "key": "ek_debug",
+   "name": "🧪诊断",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek_debug.js",
+   "searchable": 0,
+   "quickSearch": 0,
+   "filterable": 0,
+   "ext": ""
+  },
   {
    "key": "ek_douban",
    "name": "豆瓣浏览",
