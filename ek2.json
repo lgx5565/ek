@@ -1,0 +1,167 @@
+{
+ "spider": "./9527.jar",
+ "wallpaper": "https://t.alcy.cc/fj",
+ "warningText": "易看源 drpy 适配 v2 · 模块格式 · 仅供学习",
+ "sites": [
+  {
+   "key": "ek2_debug",
+   "name": "🧪诊断",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_debug.js",
+   "searchable": 0,
+   "quickSearch": 0,
+   "filterable": 0,
+   "ext": ""
+  },
+  {
+   "key": "ek_douban",
+   "name": "豆瓣浏览",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_douban.js",
+   "searchable": 0,
+   "quickSearch": 0,
+   "filterable": 1,
+   "ext": ""
+  },
+  {
+   "key": "ek_sd",
+   "name": "闪电",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_sd.js",
+   "searchable": 1,
+   "quickSearch": 0,
+   "filterable": 1,
+   "ext": ""
+  },
+  {
+   "key": "ek_dbk",
+   "name": "独播库",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_dbk.js",
+   "searchable": 1,
+   "quickSearch": 0,
+   "filterable": 1,
+   "ext": ""
+  },
+  {
+   "key": "ek_nm",
+   "name": "农民伯伯",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_nm.js",
+   "searchable": 1,
+   "quickSearch": 0,
+   "filterable": 1,
+   "ext": ""
+  },
+  {
+   "key": "ek_nmeng",
+   "name": "柠檬4K",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_nmeng.js",
+   "searchable": 1,
+   "quickSearch": 0,
+   "filterable": 1,
+   "ext": ""
+  },
+  {
+   "key": "ek_rebo",
+   "name": "热播",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_rebo.js",
+   "searchable": 1,
+   "quickSearch": 0,
+   "filterable": 1,
+   "ext": ""
+  },
+  {
+   "key": "ek_jianpian",
+   "name": "荐片",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_jianpian.js",
+   "searchable": 1,
+   "quickSearch": 0,
+   "filterable": 1,
+   "ext": {
+    "imageHost": "https://img.cdgbq.com"
+   }
+  },
+  {
+   "key": "ek_sz",
+   "name": "柿子",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_sz.js",
+   "searchable": 1,
+   "quickSearch": 0,
+   "filterable": 1,
+   "ext": ""
+  },
+  {
+   "key": "ek_sx",
+   "name": "师兄",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_sx.js",
+   "searchable": 1,
+   "quickSearch": 0,
+   "filterable": 1,
+   "ext": ""
+  },
+  {
+   "key": "ek_zhuzhu",
+   "name": "粉猪",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_zhuzhu.js",
+   "searchable": 1,
+   "quickSearch": 0,
+   "filterable": 1,
+   "ext": ""
+  },
+  {
+   "key": "ek_jpys",
+   "name": "金牌影视",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_jpys.js",
+   "searchable": 1,
+   "quickSearch": 0,
+   "filterable": 1,
+   "ext": ""
+  },
+  {
+   "key": "ek_guazi",
+   "name": "瓜子",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_guazi.js",
+   "searchable": 1,
+   "quickSearch": 0,
+   "filterable": 1,
+   "ext": ""
+  },
+  {
+   "key": "ek_yzx",
+   "name": "云帧",
+   "type": 3,
+   "api": "https://gh-proxy.com/https://raw.githubusercontent.com/lgx5565/ek/main/ek2_yzx.js",
+   "searchable": 1,
+   "quickSearch": 0,
+   "filterable": 1,
+   "ext": ""
+  }
+ ],
+ "doh": [
+  {
+   "name": "Cloudflare",
+   "url": "https://cloudflare-dns.com/dns-query",
+   "ips": [
+    "1.1.1.1",
+    "1.0.0.1"
+   ]
+  },
+  {
+   "name": "Ali",
+   "url": "https://dns.alidns.com/dns-query",
+   "ips": [
+    "223.5.5.5",
+    "223.6.6.6"
+   ]
+  }
+ ]
+}
