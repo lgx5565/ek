@@ -7966,10 +7966,21 @@ function __okBuildAdapter(routes, meta) {
       }, function (e) { return J({ class: [], filters: {}, msg: 'home: ' + String((e && e.message) || e).slice(0, 100) }); });
     },
     homeVod: function () {
+      // 修复: 多数源未注册 /homeVod 路由, 首页卡片实际来自 /home 的 list。
+      // 优先 /homeVod(若源提供), 否则回退 /home.list, 再否则空。
       return call('/homeVod', pack({})).then(function (r) {
-        if (!r) return J({ list: [] });
-        return J({ list: r.list || (r.vod_id ? [r] : []) });
-      }, function () { return J({ list: [] }); });
+        if (r && r.list && r.list.length) return J({ list: r.list });
+        if (r && r.vod_id) return J({ list: [r] });
+        return call('/home', pack({})).then(function (h) {
+          if (h && h.list && h.list.length) return J({ list: h.list });
+          return J({ list: [] });
+        }, function () { return J({ list: [] }); });
+      }, function () {
+        return call('/home', pack({})).then(function (h) {
+          if (h && h.list && h.list.length) return J({ list: h.list });
+          return J({ list: [] });
+        }, function () { return J({ list: [] }); });
+      });
     },
     category: function (tid, pg, filter, extend) {
       pg = parseInt(pg, 10) || 1;
