@@ -1,0 +1,203 @@
+{
+  "spider": "",
+  "sites": [
+    {
+      "key": "4K影视",
+      "name": "4K影视",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/4K%E5%BD%B1%E8%A7%86.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "555电影",
+      "name": "555电影",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/555%E7%94%B5%E5%BD%B1.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "两个BT",
+      "name": "两个BT",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E4%B8%A4%E4%B8%AABT.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "云联4K",
+      "name": "云联4K",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E4%BA%91%E8%81%944K.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "剧下饭",
+      "name": "剧下饭",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E5%89%A7%E4%B8%8B%E9%A5%AD.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "华谊",
+      "name": "华谊",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E5%8D%8E%E8%B0%8A.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "咕噜",
+      "name": "咕噜",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E5%92%95%E5%99%9C.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "多多影视",
+      "name": "多多影视",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E5%A4%9A%E5%A4%9A%E5%BD%B1%E8%A7%86.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "天堂",
+      "name": "天堂",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E5%A4%A9%E5%A0%82.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "布布",
+      "name": "布布",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E5%B8%83%E5%B8%83.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "星影4K",
+      "name": "星影4K",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E6%98%9F%E5%BD%B14K.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "枫叶影视",
+      "name": "枫叶影视",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E6%9E%AB%E5%8F%B6%E5%BD%B1%E8%A7%86.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "橘汁",
+      "name": "橘汁",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E6%A9%98%E6%B1%81.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "热播影视",
+      "name": "热播影视",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E7%83%AD%E6%92%AD%E5%BD%B1%E8%A7%86.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "瓜子影视",
+      "name": "瓜子影视",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E7%93%9C%E5%AD%90%E5%BD%B1%E8%A7%86.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "网飞猫",
+      "name": "网飞猫",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E7%BD%91%E9%A3%9E%E7%8C%AB.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "苹果",
+      "name": "苹果",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E8%8B%B9%E6%9E%9C.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "蓝鸟",
+      "name": "蓝鸟",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E8%93%9D%E9%B8%9F.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "豆瓣",
+      "name": "豆瓣",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E8%B1%86%E7%93%A3.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "金牌影视",
+      "name": "金牌影视",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E9%87%91%E7%89%8C%E5%BD%B1%E8%A7%86.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "韩圈",
+      "name": "韩圈",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E9%9F%A9%E5%9C%88.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
+    {
+      "key": "麦田影视",
+      "name": "麦田影视",
+      "type": 3,
+      "api": "https://gitproxy.click/https://raw.githubusercontent.com/lgx5565/ek/main/js/%E9%BA%A6%E7%94%B0%E5%BD%B1%E8%A7%86.js",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    }
+  ]
+}
